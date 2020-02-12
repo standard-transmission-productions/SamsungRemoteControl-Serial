@@ -21,6 +21,8 @@ namespace WindowsFormsApp1
         Panel[] pages;
         byte header, command, id, dataLength, data, checksum;
         bool inputError = true;
+        string portNum = "";
+        int boundRate = 0;
 
         public Form1()
         {
@@ -28,7 +30,7 @@ namespace WindowsFormsApp1
             
         }
 
-        private void connectTV(string port,int rate) {
+        public void connectTV(string port,int rate) {
             sp = new SerialPort();
             sp.PortName = port;
             sp.BaudRate = rate;
@@ -39,9 +41,20 @@ namespace WindowsFormsApp1
         }
 
         private void close() {
-            sp.Close();
-            sp.Dispose();
-            sp = null;
+            if (sp.IsOpen) {
+                sp.Close();
+                sp.Dispose();
+                sp = null;
+            }
+        }
+
+        void SendCommandLine(string port, int rate, byte head, byte com, byte id, byte datalength, byte data, byte sum) {
+            connectTV(port,rate);
+            //byte[] bytestosend = { 0xAA, 0x11, 0x00, 0x01, 0x01, 0x13 };
+            //sp.Write(bytestosend, 0, bytestosend.Length);
+            senCommand(header, command, id, dataLength, data, checksum);
+            
+            close();
         }
 
         private void Form1_Load(object sender, EventArgs e)
@@ -63,7 +76,12 @@ namespace WindowsFormsApp1
             //Debug.WriteLine(Convert.ToString(header, 16));
             checksum = getchecksum(command,id,dataLength,data);
             //Debug.WriteLine("checksum: " + Convert.ToString(checksum, 16));
-        }  
+        }
+
+        private void connectTV()
+        {
+            throw new NotImplementedException();
+        }
 
         byte getchecksum(byte com,byte id,byte datalength,byte data) {
             byte all = 0x00;
@@ -73,13 +91,6 @@ namespace WindowsFormsApp1
             }
             int total = all % ((int)Math.Pow(16, 2));
             all = decToHex(total);
-            //string hexVaule = total.ToString("X");
-            //Debug.WriteLine(hexVaule);
-            //all = byte.Parse(hexVaule, System.Globalization.NumberStyles.HexNumber);
-            //all = Convert.ToByte(all % ((int)Math.Pow(16, 2)));
-            //all = Convert.ToByte(total);
-            //var test = Convert.ToString(total, 16);
-            //test = test.Insert(0,"0x");
             return all;
         }
 
@@ -105,33 +116,24 @@ namespace WindowsFormsApp1
             else {
                 sum = getchecksum(command, id, dataLength, data);
                 byte[] line = { head, com, id, dataLength, data, sum };
+                byte[] test = { 0xAA, 0x11, 0x00, 0x01, 0x01, 0x13 };
                 for (int i = 0; i < line.Length; i ++ ) {
-                    Debug.WriteLine(line[i].ToString("X3"));
+                    if (line[i] == test[i]) {
+                        Debug.WriteLine(test[i].ToString("X3"));
+                    }  
                 }
                 
-                //sp.Write(line, 0, line.Length);
+                sp.Write(line, 0, line.Length);
             }
         }
 
         private void connect_Click(object sender, EventArgs e)
         {
-            //sp = new SerialPort();
-            //sp.PortName = "COM4";
-            //sp.BaudRate = 9600;
-            //sp.Parity = Parity.None;
-            //sp.StopBits = StopBits.One;
-            //sp.Open();
+            SendCommandLine(portNum, boundRate, header, 0x11, id, dataLength, 0x01, checksum);
 
-            //byte[] bytestosend = { 0xAA, 0x11, id, 0x01,command, checksum };
-            //bytestosend = commandLine(header, command, id, dataLength, data, checksum);
+            //byte[] bytestosend = { 0xAA, 0x11, id, 0x01, command, checksum };
+            ////bytestosend = commandLine(header, command, id, dataLength, data, checksum);
             //sp.Write(bytestosend, 0, bytestosend.Length);
-            command = 0x11;
-            data = 0x01;
-            senCommand(header, command, id, dataLength, data, checksum);
-
-            //sp.Close();
-            //sp.Dispose();
-            //sp = null;
         }
 
         private void connectbtn_Click(object sender, EventArgs e)
@@ -140,15 +142,19 @@ namespace WindowsFormsApp1
             Debug.WriteLine(inputRate.Text);
             if (comPortList.SelectedItem != null && inputRate.Text != string.Empty)
             {
-                connectTV(comPortList.SelectedItem.ToString(), Int32.Parse(inputRate.Text));
-                if (sp.IsOpen)
-                {
-                    pages[1].BringToFront();
-                }
-                else
-                {
-                    MessageBox.Show("Port is not connected, Please choose the right port!");
-                }
+                //connectTV(comPortList.SelectedItem.ToString(), Int32.Parse(inputRate.Text));
+                portNum = comPortList.SelectedItem.ToString();
+                
+                boundRate = Int32.Parse(inputRate.Text);
+                pages[1].BringToFront();
+                //if (sp.IsOpen)
+                //{
+                //    pages[1].BringToFront();
+                //}
+                //else
+                //{
+                //    MessageBox.Show("Port is not connected, Please choose the right port!");
+                //}
             }
             else {
                 MessageBox.Show("Please fill in port and rate!");
@@ -158,7 +164,7 @@ namespace WindowsFormsApp1
 
         private void back_Click(object sender, EventArgs e)
         {
-            close();
+            //close();
             comPortList.SelectedItem = null;
             comPortList.Items.Clear();
             string[] ports = SerialPort.GetPortNames();
@@ -183,10 +189,11 @@ namespace WindowsFormsApp1
             //sp.StopBits = StopBits.One;
             //sp.Open();
             //byte[] bytestosend = { 0xAA, 0x11, 0x01, 0x01, 0x00, 0x13 };
+            SendCommandLine(portNum, boundRate, header, 0x11, id, dataLength, 0x00, checksum);
             //sp.Write(bytestosend, 0, bytestosend.Length);
-            command = 0x11;
-            data = 0x00;
-            senCommand(header, command, id, dataLength, data, checksum);
+            //command = 0x11;
+            //data = 0x00;
+            //senCommand(header, command, id, dataLength, data, checksum);
             //close();
 
         }
@@ -202,10 +209,10 @@ namespace WindowsFormsApp1
             //sp.Open();
             //byte[] bytestosend = { 0xAA, 0x14, 0x01, 0x01, 0x21, 0x37 };
             //sp.Write(bytestosend, 0, bytestosend.Length);
-            command = 0x14;
-            data = 0x21;
-            senCommand(header, command, id, dataLength, data, checksum);
-
+            //command = 0x14;
+            //data = 0x21;
+            //senCommand(header, command, id, dataLength, data, checksum);
+            SendCommandLine(portNum, boundRate, header, 0x14, id, dataLength, 0x21, checksum);
             //sp.Close();
             //sp.Dispose();
             //sp = null;
@@ -221,10 +228,10 @@ namespace WindowsFormsApp1
             //sp.Open();
             //byte[] bytestosend = { 0xAA, 0x14, 0x01, 0x01, 0x23, 0x39 };
             //sp.Write(bytestosend, 0, bytestosend.Length);
-
-            command = 0x14;
-            data = 0x23;
-            senCommand(header, command, id, dataLength, data, checksum);
+            SendCommandLine(portNum, boundRate, header, 0x14, id, dataLength, 0x23, checksum);
+            //command = 0x14;
+            //data = 0x23;
+            //senCommand(header, command, id, dataLength, data, checksum);
 
             //sp.Close();
             //sp.Dispose();
@@ -241,10 +248,10 @@ namespace WindowsFormsApp1
             //sp.Open();
             //byte[] bytestosend = { 0xAA, 0x14, 0x01, 0x01, 0x31, 0x47 };
             //sp.Write(bytestosend, 0, bytestosend.Length);
-            command = 0x14;
-            data = 0x31;
-            senCommand(header, command, id, dataLength, data, checksum);
-
+            //command = 0x14;
+            //data = 0x31;
+            //senCommand(header, command, id, dataLength, data, checksum);
+            SendCommandLine(portNum, boundRate, header, 0x14, id, dataLength, 0x31, checksum);
             //sp.Close();
             //sp.Dispose();
             //sp = null;
