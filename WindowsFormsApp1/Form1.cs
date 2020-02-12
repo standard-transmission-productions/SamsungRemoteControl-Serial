@@ -116,11 +116,11 @@ namespace WindowsFormsApp1
             else {
                 sum = getchecksum(command, id, dataLength, data);
                 byte[] line = { head, com, id, dataLength, data, sum };
-                byte[] test = { 0xAA, 0x11, 0x00, 0x01, 0x01, 0x13 };
+                //byte[] test = { 0xAA, 0x11, 0x00, 0x01, 0x01, 0x13 };
                 for (int i = 0; i < line.Length; i ++ ) {
-                    if (line[i] == test[i]) {
-                        Debug.WriteLine(test[i].ToString("X3"));
-                    }  
+                    //if (line[i] == test[i]) {
+                        Debug.WriteLine(line[i].ToString("X3"));
+                    //}  
                 }
                 
                 sp.Write(line, 0, line.Length);
@@ -129,7 +129,9 @@ namespace WindowsFormsApp1
 
         private void connect_Click(object sender, EventArgs e)
         {
-            SendCommandLine(portNum, boundRate, header, 0x11, id, dataLength, 0x01, checksum);
+            command = 0x11;
+            data = 0x01;
+            SendCommandLine(portNum, boundRate, header, command, id, dataLength, data, checksum);
 
             //byte[] bytestosend = { 0xAA, 0x11, id, 0x01, command, checksum };
             ////bytestosend = commandLine(header, command, id, dataLength, data, checksum);
@@ -189,10 +191,11 @@ namespace WindowsFormsApp1
             //sp.StopBits = StopBits.One;
             //sp.Open();
             //byte[] bytestosend = { 0xAA, 0x11, 0x01, 0x01, 0x00, 0x13 };
-            SendCommandLine(portNum, boundRate, header, 0x11, id, dataLength, 0x00, checksum);
+            
             //sp.Write(bytestosend, 0, bytestosend.Length);
-            //command = 0x11;
-            //data = 0x00;
+            command = 0x11;
+            data = 0x00;
+            SendCommandLine(portNum, boundRate, header, command, id, dataLength, data, checksum);
             //senCommand(header, command, id, dataLength, data, checksum);
             //close();
 
@@ -209,10 +212,10 @@ namespace WindowsFormsApp1
             //sp.Open();
             //byte[] bytestosend = { 0xAA, 0x14, 0x01, 0x01, 0x21, 0x37 };
             //sp.Write(bytestosend, 0, bytestosend.Length);
-            //command = 0x14;
-            //data = 0x21;
+            command = 0x14;
+            data = 0x21;
             //senCommand(header, command, id, dataLength, data, checksum);
-            SendCommandLine(portNum, boundRate, header, 0x14, id, dataLength, 0x21, checksum);
+            SendCommandLine(portNum, boundRate, header, command, id, dataLength, data, checksum);
             //sp.Close();
             //sp.Dispose();
             //sp = null;
@@ -228,9 +231,9 @@ namespace WindowsFormsApp1
             //sp.Open();
             //byte[] bytestosend = { 0xAA, 0x14, 0x01, 0x01, 0x23, 0x39 };
             //sp.Write(bytestosend, 0, bytestosend.Length);
-            SendCommandLine(portNum, boundRate, header, 0x14, id, dataLength, 0x23, checksum);
-            //command = 0x14;
-            //data = 0x23;
+            command = 0x14;
+            data = 0x23;
+            SendCommandLine(portNum, boundRate, header, command, id, dataLength, data, checksum);
             //senCommand(header, command, id, dataLength, data, checksum);
 
             //sp.Close();
@@ -248,10 +251,10 @@ namespace WindowsFormsApp1
             //sp.Open();
             //byte[] bytestosend = { 0xAA, 0x14, 0x01, 0x01, 0x31, 0x47 };
             //sp.Write(bytestosend, 0, bytestosend.Length);
-            //command = 0x14;
-            //data = 0x31;
+            command = 0x14;
+            data = 0x31;
             //senCommand(header, command, id, dataLength, data, checksum);
-            SendCommandLine(portNum, boundRate, header, 0x14, id, dataLength, 0x31, checksum);
+            SendCommandLine(portNum, boundRate, header, command, id, dataLength, data, checksum);
             //sp.Close();
             //sp.Dispose();
             //sp = null;
